@@ -32,7 +32,6 @@ public class BarcodeGenerator {
     public ByteArrayOutputStream writeToByteStream(String barcodeContents) throws WriterException, IOException {
         logger.debug("Generating new barcode: {}", barcodeContents);
 
-        // Generate barcode
         BitMatrix matrix = writer.encode(barcodeContents, format, width, height);
         ByteArrayOutputStream stream = new ByteArrayOutputStream();
         MatrixToImageWriter.writeToStream(matrix, "PNG", stream);
