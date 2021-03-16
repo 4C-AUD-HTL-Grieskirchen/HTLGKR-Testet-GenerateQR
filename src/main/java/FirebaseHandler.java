@@ -114,7 +114,7 @@ public class FirebaseHandler {
     }
 
     public void writeReferenceOnRealtime(String content, String path) {
-        db.child("generated-barcodes").push().child(content).setValue(path, new DatabaseReference.CompletionListener() {
+        db.child("generated-barcodes").child(content).setValue(path, new DatabaseReference.CompletionListener() {
             @Override
             public void onComplete(DatabaseError error, DatabaseReference ref) {
                 logger.debug("Wrote on realtime: ({}: {})", content, path);
