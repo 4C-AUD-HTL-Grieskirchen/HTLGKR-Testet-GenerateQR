@@ -20,7 +20,7 @@ public class Main {
             logger.info("Init firebase...");
             FirebaseHandler firebase = new FirebaseHandler("key.json");
             logger.info("Setting listeners...");
-            firebase.setRealtimeListenerDefault(generator);
+            firebase.setFirestoreListener(generator);
 
             logger.info("Running! Type 'exit' to terminate the progress.");
             Scanner sc = new Scanner(System.in);
