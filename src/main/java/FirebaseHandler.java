@@ -6,8 +6,8 @@ import com.google.firebase.FirebaseApp;
 import com.google.firebase.FirebaseOptions;
 import com.google.firebase.cloud.FirestoreClient;
 import com.google.firebase.cloud.StorageClient;
-import com.google.firebase.database.*;
-import com.google.zxing.WriterException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.annotation.Nullable;
 import java.io.ByteArrayOutputStream;
@@ -18,6 +18,9 @@ import java.util.Map;
 
 public class FirebaseHandler {
 
+    // Logger
+    private static final Logger logger = LoggerFactory.getLogger(FirebaseHandler.class);
+
     // Config
     public String projectId;
     public String bucketAddress;
@@ -25,7 +28,6 @@ public class FirebaseHandler {
 
     private Bucket bucket;
     private FileInputStream service;
-    private DatabaseReference db;
     private Firestore firestore;
 
     public FirebaseHandler(String serviceFilePath) throws IOException {
@@ -47,6 +49,10 @@ public class FirebaseHandler {
     }
 
     private void initFirebase() throws IOException {
+        logger.debug("Initializing Firebase with values:");
+        logger.debug("DatabaseURL: {}", databaseURL);
+        logger.debug("StorageBucket: {}", bucketAddress);
+
         FirebaseOptions options = FirebaseOptions.builder()
                 .setCredentials(GoogleCredentials.fromStream(service))
                 .setDatabaseUrl(databaseURL)
@@ -54,7 +60,6 @@ public class FirebaseHandler {
                 .build();
         FirebaseApp.initializeApp(options);
 
-        db = FirebaseDatabase.getInstance().getReference();
         firestore = FirestoreClient.getFirestore();
         bucket = StorageClient.getInstance().bucket();
     }
@@ -63,126 +68,55 @@ public class FirebaseHandler {
 
     public String uploadToStorage(String filename, ByteArrayOutputStream stream) {
         String hash = Hashing.toHexString(Hashing.getSHA(filename));
-        String path = "barcodes/" + hash + ".png";
+        String path = "barcodes/" + hash + ".svg";
+        logger.debug("Uploading {} to cloud storage...", path);
         bucket.create(path, stream.toByteArray());
         return path;
     }
 
     // FIRESTORE
 
-    public void setFirestoreListener(EventListener<DocumentSnapshot> snapshotEventListener) {
-        firestore.collection("barcodes")
-                .document("queued")
+    public void setFirestoreListener(EventListener<QuerySnapshot> snapshotEventListener) {
+        firestore.collection("Anmeldungen")
                 .addSnapshotListener(snapshotEventListener);
     }
 
-    public void setFirestoreListener(BarcodeGenerator barcode) {
-        setFirestoreListener(new EventListener<DocumentSnapshot>() {
+    public void setFirestoreListener() {
+        setFirestoreListener(new EventListener<QuerySnapshot>() {
             @Override
-            public void onEvent(@Nullable DocumentSnapshot value, @Nullable FirestoreException error) {
-                if (error != null)
+            public void onEvent(@Nullable QuerySnapshot value, @Nullable FirestoreException error) {
+                if (error != null || value == null)
                     return;
 
-                if (value != null && value.exists()) {
-                    Map<String, Object> data = value.getData();
+                for (DocumentSnapshot doc : value) {
+                    logger.debug("Processing document with id: {}", doc.getId());
+                    if (doc.contains("barcodelocation")) {
+                        logger.debug("Skipping {}... (barcodelocation already defined)");
+                        continue;
+                    }
 
-                    data.forEach((key, val) -> {
-                        try {
-                            String v = val.toString();
-                            String path = uploadToStorage(v, barcode.writeToByteStream(v));
-                            writeReferenceOnFirestore(v, path);
-                            removeQueuedFromFirestore(key);
+                    try {
+                        String content = doc.get("barcodecontent").toString();
+                        if (content == null)
+                            continue;
 
-                        } catch (IOException | WriterException ex) {
-                            ex.printStackTrace();
-                        }
-                    });
+                        String path = uploadToStorage(content, BarcodeGenerator.writeSvgToByteStream(content));
+                        writeReferenceOnFirestore(path, doc.getId());
+                        logger.info("Generated a new barcode for {}! (id: {}, barcode: {})", doc.get("name"), doc.getId(), content);
+
+                    } catch (IOException ex) {
+                        ex.printStackTrace();
+                    }
                 }
             }
         });
     }
 
-    public void removeQueuedFromFirestore(String key) {
+    public void writeReferenceOnFirestore(String path, String doc) {
         Map<String, Object> update = new HashMap<>();
-        update.put(key, FieldValue.delete());
-
-        ApiFuture<WriteResult> writeResult = firestore.collection("barcodes")
-                .document("queued")
-                .update(update);
-    }
-
-    public void writeReferenceOnFirestore(String content, String path) {
-        Map<String, Object> update = new HashMap<>();
-        update.put(content, path);
-        ApiFuture<WriteResult> writeResult = firestore.collection("barcodes")
-                .document("generated")
+        update.put("barcodelocation", path);
+        ApiFuture<WriteResult> writeResult = firestore.collection("Anmeldungen")
+                .document(doc)
                 .set(update, SetOptions.merge());
-    }
-
-    // REALTIME DATABASE
-
-    @Deprecated
-    public void setRealtimeListener(ChildEventListener eventListener) {
-        db.child("queued-barcodes").addChildEventListener(eventListener);
-    }
-
-    @Deprecated
-    public void setRealtimeListenerDefault(BarcodeGenerator barcode) {
-        setRealtimeListener(new ChildEventListener() {
-            @Override
-            public void onChildAdded(DataSnapshot snapshot, String previousChildName) {
-                if (snapshot == null)
-                    return;
-
-                String value = snapshot.getValue().toString();
-
-                try {
-                    String path = uploadToStorage(value, barcode.writeToByteStream(value));
-                    writeReferenceOnRealtime(value, path);
-                    removeQueuedFromRealtime(snapshot.getKey());
-
-                } catch (IOException | WriterException ex) {
-                    ex.printStackTrace();
-                }
-            }
-
-            @Override
-            public void onChildChanged(DataSnapshot snapshot, String previousChildName) {
-
-            }
-
-            @Override
-            public void onChildRemoved(DataSnapshot snapshot) {
-
-            }
-
-            @Override
-            public void onChildMoved(DataSnapshot snapshot, String previousChildName) {
-
-            }
-
-            @Override
-            public void onCancelled(DatabaseError error) {
-
-            }
-        });
-    }
-
-    @Deprecated
-    public void writeReferenceOnRealtime(String content, String path) {
-        db.child("generated-barcodes").child(content).setValue(path, new DatabaseReference.CompletionListener() {
-            @Override
-            public void onComplete(DatabaseError error, DatabaseReference ref) {
-            }
-        });
-    }
-
-    @Deprecated
-    public void removeQueuedFromRealtime(String key) {
-        db.child("queued-barcodes").child(key).removeValue(new DatabaseReference.CompletionListener() {
-            @Override
-            public void onComplete(DatabaseError error, DatabaseReference ref) {
-            }
-        });
     }
 }
