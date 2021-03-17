@@ -1,3 +1,4 @@
+import io.netty.util.internal.logging.Slf4JLoggerFactory;
 import org.apache.log4j.BasicConfigurator;
 import org.apache.log4j.Level;
 import org.slf4j.Logger;
@@ -7,7 +8,6 @@ import java.util.Scanner;
 
 public class Main {
 
-    // Logging
     private static final Logger logger = LoggerFactory.getLogger(Main.class);
 
     public static void main(String[] args) {
@@ -15,15 +15,22 @@ public class Main {
         org.apache.log4j.Logger.getRootLogger().setLevel(Level.INFO);
 
         try {
-            logger.info("Init barcode generator...");
-            BarcodeGenerator generator = new BarcodeGenerator();
-            logger.info("Init firebase...");
-            FirebaseHandler firebase = new FirebaseHandler("key.json");
-            logger.info("Setting listeners...");
-            firebase.setFirestoreListener(generator);
+            String keyFile = "key.json"; // Path to key file
 
-            logger.info("Running! Type 'exit' to terminate the progress.");
+            logger.debug("Initializing FirebaseHandler with key file: {}", keyFile);
+            FirebaseHandler firebase = new FirebaseHandler(keyFile);
+            firebase.setFirestoreListener();
+
             Scanner sc = new Scanner(System.in);
+            System.out.println();
+            System.out.println("    //   ) )                                                       //   ) )                  ");
+            System.out.println("   //___/ /   ___      __      ___      ___      ___   /  ___     //         ___       __    ");
+            System.out.println("  / __  (   //   ) ) //  ) ) //   ) ) //   ) ) //   ) / //___) ) //  ____  //___) ) //   ) ) ");
+            System.out.println(" //    ) ) //   / / //      //       //   / / //   / / //       //    / / //       //   / /  ");
+            System.out.println("//____/ / ((___( ( //      ((____   ((___/ / ((___/ / ((____   ((____/ / ((____   //   / /   ");
+            System.out.println();
+
+            logger.info("Startup complete! Type 'exit' to stop the program:");
             while (!sc.nextLine().equals("exit")) ; // Prevent program from exiting
         } catch (Exception ex) {
             ex.printStackTrace();
