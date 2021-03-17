@@ -8,8 +8,6 @@ import com.google.firebase.cloud.FirestoreClient;
 import com.google.firebase.cloud.StorageClient;
 import com.google.firebase.database.*;
 import com.google.zxing.WriterException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import javax.annotation.Nullable;
 import java.io.ByteArrayOutputStream;
@@ -17,12 +15,8 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.ExecutionException;
 
 public class FirebaseHandler {
-
-    // Logging
-    private final Logger logger = LoggerFactory.getLogger(FirebaseHandler.class);
 
     // Config
     public String projectId;
@@ -53,8 +47,6 @@ public class FirebaseHandler {
     }
 
     private void initFirebase() throws IOException {
-        logger.debug("Initializing Firebase with values: {}; {}; {};", projectId, bucketAddress, databaseURL);
-
         FirebaseOptions options = FirebaseOptions.builder()
                 .setCredentials(GoogleCredentials.fromStream(service))
                 .setDatabaseUrl(databaseURL)
@@ -73,8 +65,6 @@ public class FirebaseHandler {
         String hash = Hashing.toHexString(Hashing.getSHA(filename));
         String path = "barcodes/" + hash + ".png";
         bucket.create(path, stream.toByteArray());
-        logger.debug("Uploaded to storage: {}", path);
-
         return path;
     }
 
@@ -90,14 +80,11 @@ public class FirebaseHandler {
         setFirestoreListener(new EventListener<DocumentSnapshot>() {
             @Override
             public void onEvent(@Nullable DocumentSnapshot value, @Nullable FirestoreException error) {
-                if (error != null) {
-                    logger.error(error.getMessage());
+                if (error != null)
                     return;
-                }
 
                 if (value != null && value.exists()) {
                     Map<String, Object> data = value.getData();
-                    logger.debug("Firestore: {}", data);
 
                     data.forEach((key, val) -> {
                         try {
@@ -107,43 +94,29 @@ public class FirebaseHandler {
                             removeQueuedFromFirestore(key);
 
                         } catch (IOException | WriterException ex) {
-                            logger.error(ex.getMessage());
+                            ex.printStackTrace();
                         }
                     });
-                } else {
-                    logger.debug("Firestore: No data found");
                 }
             }
         });
     }
 
     public void removeQueuedFromFirestore(String key) {
-        try {
-            Map<String, Object> update = new HashMap<>();
-            update.put(key, FieldValue.delete());
+        Map<String, Object> update = new HashMap<>();
+        update.put(key, FieldValue.delete());
 
-            ApiFuture<WriteResult> writeResult = firestore.collection("barcodes")
-                    .document("queued")
-                    .update(update);
-
-            logger.debug("Firestore: Item [{}] processed; time: {}", key, writeResult.get().getUpdateTime());
-        } catch (InterruptedException | ExecutionException e) {
-            e.printStackTrace();
-        }
+        ApiFuture<WriteResult> writeResult = firestore.collection("barcodes")
+                .document("queued")
+                .update(update);
     }
 
     public void writeReferenceOnFirestore(String content, String path) {
-        try {
-            Map<String, Object> update = new HashMap<>();
-            update.put(content, path);
-            ApiFuture<WriteResult> writeResult = firestore.collection("barcodes")
-                    .document("generated")
-                    .set(update, SetOptions.merge());
-
-            logger.debug("Wrote on Firestore: time: {}; data: ({}: {})", writeResult.get().getUpdateTime(), content, path);
-        } catch (InterruptedException | ExecutionException e) {
-            e.printStackTrace();
-        }
+        Map<String, Object> update = new HashMap<>();
+        update.put(content, path);
+        ApiFuture<WriteResult> writeResult = firestore.collection("barcodes")
+                .document("generated")
+                .set(update, SetOptions.merge());
     }
 
     // REALTIME DATABASE
@@ -162,7 +135,6 @@ public class FirebaseHandler {
                     return;
 
                 String value = snapshot.getValue().toString();
-                logger.info("Processing new barcode for value: {}", value);
 
                 try {
                     String path = uploadToStorage(value, barcode.writeToByteStream(value));
@@ -170,7 +142,7 @@ public class FirebaseHandler {
                     removeQueuedFromRealtime(snapshot.getKey());
 
                 } catch (IOException | WriterException ex) {
-                    logger.error(ex.getMessage());
+                    ex.printStackTrace();
                 }
             }
 
@@ -201,7 +173,6 @@ public class FirebaseHandler {
         db.child("generated-barcodes").child(content).setValue(path, new DatabaseReference.CompletionListener() {
             @Override
             public void onComplete(DatabaseError error, DatabaseReference ref) {
-                logger.debug("Wrote on realtime: ({}: {})", content, path);
             }
         });
     }
@@ -211,7 +182,6 @@ public class FirebaseHandler {
         db.child("queued-barcodes").child(key).removeValue(new DatabaseReference.CompletionListener() {
             @Override
             public void onComplete(DatabaseError error, DatabaseReference ref) {
-                logger.info("Item [{}] processed!", key);
             }
         });
     }
