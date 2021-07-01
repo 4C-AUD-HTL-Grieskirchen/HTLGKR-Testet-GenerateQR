@@ -2,6 +2,7 @@ import com.google.api.core.ApiFuture;
 import com.google.auth.oauth2.GoogleCredentials;
 import com.google.cloud.firestore.*;
 import com.google.cloud.storage.Bucket;
+import com.google.cloud.storage.Storage;
 import com.google.firebase.FirebaseApp;
 import com.google.firebase.FirebaseOptions;
 import com.google.firebase.cloud.FirestoreClient;
@@ -13,8 +14,10 @@ import javax.annotation.Nullable;
 import java.io.ByteArrayOutputStream;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 public class FirebaseHandler {
 
@@ -66,18 +69,18 @@ public class FirebaseHandler {
 
     // CLOUD STORAGE
 
-    public String uploadToStorage(String filename, ByteArrayOutputStream stream) {
+    public String uploadToStorage(String filename, String type, ByteArrayOutputStream stream) {
         String hash = Hashing.toHexString(Hashing.getSHA(filename));
-        String path = "barcodes/" + hash + ".svg";
+        String path = "barcodes/" + hash;
         logger.debug("Uploading {} to cloud storage...", path);
-        bucket.create(path, stream.toByteArray());
+        bucket.create(path + "." + type, stream.toByteArray());
         return path;
     }
 
     // FIRESTORE
 
     public void setFirestoreListener(EventListener<QuerySnapshot> snapshotEventListener) {
-        firestore.collection("Anmeldungen")
+        firestore.collection("Registrations")
                 .addSnapshotListener(snapshotEventListener);
     }
 
@@ -89,20 +92,18 @@ public class FirebaseHandler {
                     return;
 
                 for (DocumentSnapshot doc : value) {
-                    logger.debug("Processing document with id: {}", doc.getId());
-                    if (doc.contains("barcodelocation")) {
-                        logger.debug("Skipping {}... (barcodelocation already defined)");
+                    String content = doc.getId();
+
+                    if (doc.contains("barcodelocation") && doc.getString("barcodelocation").length() != 0) {
+                        logger.debug("[{}] Skipped!", content);
                         continue;
                     }
+                    logger.debug("[{}] Processing...", content);
 
                     try {
-                        String content = doc.get("barcodecontent").toString();
-                        if (content == null)
-                            continue;
-
-                        String path = uploadToStorage(content, BarcodeGenerator.writeSvgToByteStream(content));
+                        String path = uploadToStorage(content, "svg", BarcodeGenerator.writeSvgToByteStream(content));
                         writeReferenceOnFirestore(path, doc.getId());
-                        logger.info("Generated a new barcode for {}! (id: {}, barcode: {})", doc.get("name"), doc.getId(), content);
+                        logger.info("[{}] Generated new QR-Code", content);
 
                     } catch (IOException ex) {
                         ex.printStackTrace();
@@ -115,7 +116,7 @@ public class FirebaseHandler {
     public void writeReferenceOnFirestore(String path, String doc) {
         Map<String, Object> update = new HashMap<>();
         update.put("barcodelocation", path);
-        ApiFuture<WriteResult> writeResult = firestore.collection("Anmeldungen")
+        ApiFuture<WriteResult> writeResult = firestore.collection("Registrations")
                 .document(doc)
                 .set(update, SetOptions.merge());
     }

@@ -1,10 +1,12 @@
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import uk.org.okapibarcode.backend.Code3Of9;
 import uk.org.okapibarcode.backend.HumanReadableLocation;
+import uk.org.okapibarcode.backend.QrCode;
 import uk.org.okapibarcode.output.SvgRenderer;
 
+import javax.imageio.ImageIO;
 import java.awt.*;
+import java.awt.image.BufferedImage;
 import java.io.*;
 
 public class BarcodeGenerator {
@@ -15,7 +17,7 @@ public class BarcodeGenerator {
     // Config
     public static String FontName = "Monospaced";
     public static int FontSize = 24;
-    public static int Width = 2;
+    public static int Width = 100;
     public static int Height = 100;
 
     public static ByteArrayOutputStream writeSvgToByteStream(String barcodeContents) throws IOException {
@@ -26,13 +28,15 @@ public class BarcodeGenerator {
         logger.debug("Height: {}", Height);
         logger.debug("Content: {}", barcodeContents);
 
-        Code3Of9 barcode = new Code3Of9();
+        QrCode barcode = new QrCode();
         barcode.setFontName(FontName);
         barcode.setFontSize(FontSize);
-        barcode.setModuleWidth(Width);
-        barcode.setBarHeight(Height);
+        // barcode.setModuleWidth(Width);
+        // barcode.setBarHeight(Height);
         barcode.setHumanReadableLocation(HumanReadableLocation.BOTTOM);
         barcode.setContent(barcodeContents);
+        barcode.setPreferredEccLevel(QrCode.EccLevel.H);
+        logger.debug("Barcode created!");
 
         ByteArrayOutputStream out = new ByteArrayOutputStream();
         SvgRenderer renderer = new SvgRenderer(out, 1, Color.WHITE, Color.BLACK, true);

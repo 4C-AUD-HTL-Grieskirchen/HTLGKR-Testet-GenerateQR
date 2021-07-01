@@ -30,7 +30,7 @@ public class Main {
             System.out.println("//____/ / ((___( ( //      ((____   ((___/ / ((___/ / ((____   ((____/ / ((____   //   / /   ");
             System.out.println();
 
-            logger.info("Startup complete! Type 'exit' to stop the program:");
+            logger.info("Startup complete! Type 'exit' to stop the program:\n");
             while (!sc.nextLine().equals("exit")) ; // Prevent program from exiting
         } catch (Exception ex) {
             ex.printStackTrace();

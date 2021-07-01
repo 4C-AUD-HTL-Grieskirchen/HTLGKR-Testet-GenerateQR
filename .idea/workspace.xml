@@ -24,7 +24,6 @@
   <component name="ChangeListManager">
     <list default="true" id="a4503cb0-5c11-4c33-bcd3-629848ae029e" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/pom.xml" beforeDir="false" afterPath="$PROJECT_DIR$/pom.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/BarcodeGenerator.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/BarcodeGenerator.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/FirebaseHandler.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/FirebaseHandler.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/Main.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/Main.java" afterDir="false" />
@@ -47,6 +46,14 @@
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
   </component>
+  <component name="GitSEFilterConfiguration">
+    <file-type-list>
+      <filtered-out-file-type name="LOCAL_BRANCH" />
+      <filtered-out-file-type name="REMOTE_BRANCH" />
+      <filtered-out-file-type name="TAG" />
+      <filtered-out-file-type name="COMMIT_BY_MESSAGE" />
+    </file-type-list>
+  </component>
   <component name="MavenImportPreferences">
     <option name="generalSettings">
       <MavenGeneralSettings>
@@ -63,8 +70,11 @@
     <property name="RunOnceActivity.OpenProjectViewOnStart" value="true" />
     <property name="WebServerToolWindowFactoryState" value="false" />
     <property name="aspect.path.notification.shown" value="true" />
+    <property name="dart.analysis.tool.window.visible" value="false" />
+    <property name="last_opened_file_path" value="D:/Web/HTLGKR-Testet-Email-Service" />
     <property name="nodejs_package_manager_path" value="npm" />
     <property name="settings.editor.selected.configurable" value="preferences.pluginManager" />
+    <property name="show.migrate.to.gradle.popup" value="false" />
   </component>
   <component name="RecentsManager">
     <key name="MoveFile.RECENT_KEYS">
@@ -85,17 +95,6 @@
         <option name="Make" enabled="true" />
       </method>
     </configuration>
-    <configuration default="true" type="ArquillianJUnit" factoryName="" nameIsGenerated="true">
-      <option name="arquillianRunConfiguration">
-        <value>
-          <option name="containerStateName" value="" />
-        </value>
-      </option>
-      <option name="TEST_OBJECT" value="class" />
-      <method v="2">
-        <option name="Make" enabled="true" />
-      </method>
-    </configuration>
     <recent_temporary>
       <list>
         <item itemvalue="Application.Main" />
@@ -111,6 +110,12 @@
       <option name="presentableId" value="Default" />
       <updated>1615969048741</updated>
       <workItem from="1615969049808" duration="14325000" />
+      <workItem from="1624990613920" duration="773000" />
+      <workItem from="1625038384984" duration="5667000" />
+      <workItem from="1625127919514" duration="447000" />
+      <workItem from="1625131022104" duration="763000" />
+      <workItem from="1625134853194" duration="2413000" />
+      <workItem from="1625137952644" duration="1561000" />
     </task>
     <servers />
   </component>
@@ -127,43 +132,6 @@
         </entry>
       </map>
     </option>
-  </component>
-  <component name="WindowStateProjectService">
-    <state width="1877" height="777" key="GridCell.Tab.0.bottom" timestamp="1615999548814">
-      <screen x="0" y="0" width="1920" height="1040" />
-    </state>
-    <state width="1877" height="777" key="GridCell.Tab.0.bottom/0.0.1920.1040@0.0.1920.1040" timestamp="1615999548814" />
-    <state width="1877" height="777" key="GridCell.Tab.0.center" timestamp="1615999548814">
-      <screen x="0" y="0" width="1920" height="1040" />
-    </state>
-    <state width="1877" height="777" key="GridCell.Tab.0.center/0.0.1920.1040@0.0.1920.1040" timestamp="1615999548814" />
-    <state width="1877" height="777" key="GridCell.Tab.0.left" timestamp="1615999548813">
-      <screen x="0" y="0" width="1920" height="1040" />
-    </state>
-    <state width="1877" height="777" key="GridCell.Tab.0.left/0.0.1920.1040@0.0.1920.1040" timestamp="1615999548813" />
-    <state width="1877" height="777" key="GridCell.Tab.0.right" timestamp="1615999548814">
-      <screen x="0" y="0" width="1920" height="1040" />
-    </state>
-    <state width="1877" height="777" key="GridCell.Tab.0.right/0.0.1920.1040@0.0.1920.1040" timestamp="1615999548814" />
-    <state x="10" y="230" key="Maven.ArtifactSearchDialog" timestamp="1615997971747">
-      <screen x="0" y="0" width="1920" height="1040" />
-    </state>
-    <state x="10" y="230" key="Maven.ArtifactSearchDialog/0.0.1920.1040@0.0.1920.1040" timestamp="1615997971747" />
-    <state x="461" y="165" key="SettingsEditor" timestamp="1615976871641">
-      <screen x="0" y="0" width="1920" height="1040" />
-    </state>
-    <state x="461" y="165" key="SettingsEditor/0.0.1920.1040@0.0.1920.1040" timestamp="1615976871641" />
-    <state x="549" y="95" key="new project wizard" timestamp="1615985383301">
-      <screen x="0" y="0" width="1920" height="1040" />
-    </state>
-    <state x="549" y="95" key="new project wizard/0.0.1920.1040@0.0.1920.1040" timestamp="1615985383301" />
-    <state x="616" y="240" width="672" height="677" key="run.anything.popup" timestamp="1615999548791">
-      <screen x="0" y="0" width="1920" height="1040" />
-    </state>
-    <state x="616" y="240" width="672" height="677" key="run.anything.popup/0.0.1920.1040@0.0.1920.1040" timestamp="1615999548791" />
-    <state x="623" y="225" width="672" height="678" key="search.everywhere.popup" timestamp="1615999515162">
-      <screen x="0" y="0" width="1920" height="1040" />
-    </state>
-    <state x="623" y="225" width="672" height="678" key="search.everywhere.popup/0.0.1920.1040@0.0.1920.1040" timestamp="1615999515162" />
+    <option name="oldMeFiltersMigrated" value="true" />
   </component>
 </project>
